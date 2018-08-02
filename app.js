@@ -4,6 +4,15 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
+const bodyParser = require('body-parser');
+const mongoose  = require('mongoose');
+const session = require('express-session');
+const flash = require('connect-flash');
+
+// Connect to Database
+mongoose.connect('mongodb://localhost:27017/uber',{ useNewUrlParser: true },function (err,result) {
+    console.log("Database Connected...");
+});
 
 // Router--- will direct incoming trafic to specific location
 var indexRouter = require('./routes/indexR');
@@ -12,7 +21,9 @@ var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+// app.set('view engine', 'jade');
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -20,6 +31,18 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// To read post method body data
+  app.use(bodyParser.json());
+// Session
+  app.use(cookieParser());
+// Session initialize
+  app.use( session({
+      secret: 'anystringoftext',
+      saveUninitialized: false,
+      resave: false
+  }));
+// use connect-flash for flash messages
+  app.use( flash() );
 
 
 
@@ -29,7 +52,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Route the request
 indexRouter(app);
 
+app.use( (err,req,res,next)=>{
+    console.log(err," From app.js");
 
+    res.status(422)
+       .send({ error:err.message});
+
+});
 
 
 
@@ -52,6 +81,8 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
 
 
 app.listen(3050,function () {
