@@ -52,11 +52,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Route the request
 indexRouter(app);
 
+// Custom Error Handling
 app.use( (err,req,res,next)=>{
     console.log(err," From app.js");
 
-    res.status(422)
-       .send({ error:err.message});
+    // res.status(422)
+    //    .send({ error:err.message});
+
 
 });
 
@@ -67,9 +69,9 @@ app.use( (err,req,res,next)=>{
 
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
+// app.use(function(req, res, next) {
+//   next(createError(404));
+// });
 
 // error handler
 app.use(function(err, req, res, next) {

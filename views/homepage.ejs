@@ -8,25 +8,152 @@
 
     <body>
 
-        <div class="well text-center">
-            <h1>UberExpress...</h1>
+        <div class="jumbotron text-center">
+            <a href="/"><h1>UberExpress...</h1></a>
         </div>
 
         <!--STATUS START -->
-            <% if (typeof status !== "undefined" && status.length > 0){ %>
-                <div class="alert alert-danger" id="status"><%= status %></div>
-            <% } %>
+            <% if (typeof code !== "undefined" && status.toString() !== ''){
+                if (code.toString() === 'success'){ %>
+                    <div class="alert alert-success" id="status"><%= status %></div>
+                <% }else { %>
+                    <div class="alert alert-danger" id="status"><%= status %></div>
+                <% }}%>
         <!-- STATUS END -->
 
-        <div class="container">
+        <!-- [POST] Create Driver-->
+        <div class="container well">
             <h3>Create Driver:</h3>
             <form method="POST" action="/api/driver">
+                <table>
+                    <tr>
+                        <td><label>Name:</label></td>
+                        <td><input type="text" name="name"></td>
+                    </tr><br>
 
-                <label>email:</label><br>
-                <input type="text" name="email">
+
+                    <tr>
+                        <td><label>Email:</label></td>
+                        <td><input type="email" name="email"></td>
+                    </tr>
+
+                </table>
 
                 <button type="submit">Submit!</button>
             </form>
+        </div>
+
+        <!--[PUT] update driver details-->
+        <div class="container well">
+            <h3>Update Driver:</h3>
+
+            <div class="row">
+
+                <div class="col-md-5">
+                    <form method="POST" action="/api/driver">
+                        <input type="hidden" name="_method" value="put">
+
+
+                        <section>
+                            <label>Email Id:</label>
+                            <label class="select" >
+                                <select class="input-sm" name="email" onchange="updateName(this)">
+                                    <option value="">Select</option>
+                                    <% for(var i=0; i<data.length ;i++){  %>
+                                        <option value="<%= data[i]._id; %>"><%= data[i]._id + ' | ' + data[i].email %></option>
+                                    <% } %>
+                                </select> <i></i> </label>
+                        </section><br>
+
+
+
+
+                        <script>
+                            function updateName(object){
+                                var index = object.selectedIndex;
+                                var myVar =  `<%- data %>` ;
+
+                                // console.log(index);
+                                let tokens = myVar.split(',');
+                                let temp = tokens[5*(index-1)].split(':');
+                                let $driving = temp[1].trim();
+
+                                temp = tokens[5*(index-1)+2].split(':');
+                                let $name = temp[1].split("'") ;
+                                $name = $name[1].trim();
+
+                                // console.log($driving);
+                                // if ($driving == "1")
+                                // if ($driving === "1")
+
+                                // if ($driving == true)
+                                // if ($driving.equals("true") === true)
+                                // if ($driving)
+                                //     console.info(true);
+                                // else console.info(false);
+
+                                // console.log($name);
+
+                                if ($driving === "true")
+                                    document.querySelector('#drivingID').selectedIndex = 0;
+                                else
+                                    document.querySelector('#drivingID').selectedIndex = 1;
+                                document.querySelector('#nameID').value =  $name;
+                            }
+                        </script>
+
+
+                        <label>Driving:</label>
+                        <label>
+                            <select name="driving" id="drivingID">
+                                <option value="true">true</option>
+                                <option value="false">false</option>
+                            </select>
+                        </label><br>
+
+                        <label>Name:</label>
+                        <input type="text" name="name" id="nameID"><br><br>
+
+
+
+                        <button type="submit">Submit!</button>
+                    </form>
+                </div>
+
+                <div class="col-md-7">
+                    <% if (updatedData.toString() !== '') {%>
+                        <table class="table">
+                            <tbody>
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>Id</td>
+                                <td><%= updatedData[0]._id%></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">2</th>
+                                <td>Name</td>
+                                <% console.log(tag);%>
+                                <td <% if (tag.includes('name')) {%>class="alert-success" <%}%>><%= updatedData[0].name%></td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">2</th>
+                                <td>Email</td>
+                                <td><%= updatedData[0].email%></td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">3</th>
+                                <td>Driving Status</td>
+                                <td <% if (tag.includes('driving')) {%>class="alert-success" <%}%>><%= updatedData[0].driving%></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    <% } %>
+                </div>
+
+            </div>
+
         </div>
 
 
