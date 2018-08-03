@@ -20,8 +20,11 @@ module.exports = {
               status: req.flash('status'),
               code: req.flash('code'),
               'data': $emails,
+
               updatedData : req.flash('updatedData'),
-              tag : req.flash('tag')
+              tag : req.flash('tag'),
+
+              deletedData: req.flash('deletedData')
           });
 
       });
@@ -74,6 +77,15 @@ module.exports = {
                       })
               }).catch(next);
 
+
+      }else if(req.body._method === 'delete'){
+            const driverId = req.body.id;
+
+            DriverModel.findByIdAndDelete(driverId)
+                .then( driver => {
+                    req.flash('deletedData', driver);
+                    res.redirect('/');
+                }).catch(next);
 
       }else{
       /*            POST          */
@@ -150,6 +162,12 @@ module.exports = {
         //
         //         // console.log(data)    // Previous data
         //     }).catch(next);
+
+    },
+
+    delete(req,res,next){
+
+
 
     }
 

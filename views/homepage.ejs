@@ -156,7 +156,60 @@
 
         </div>
 
+        <!--[DELETE] update driver details-->
+        <div class="container well">
+            <h3>Delete Driver:</h3>
 
+            <div class="row">
+
+                <div class="col-md-5">
+                    <form method="POST" action="/api/driver">
+                        <input type="hidden" name="_method" value="delete">
+
+                        <section>
+                            <label>Email Id:</label>
+                            <label class="select" >
+                                <select class="input-sm" name="id">
+                                    <option value="">Select</option>
+                                    <% for(var i=0; i<data.length ;i++){  %>
+                                    <option value="<%= data[i]._id; %>"><%= data[i]._id + ' | ' + data[i].email %></option>
+                                    <% } %>
+                                </select> <i></i> </label>
+                        </section><br>
+
+                        <button type="submit">Submit!</button>
+                    </form>
+                </div>
+
+                <div class="col-md-7">
+                    <% if (deletedData.toString() !== '') {%>
+                    <table class="table alert-danger">
+                        <tbody>
+                        <tr>
+                            <th scope="row">1</th>
+                            <td>Id</td>
+                            <td><%= deletedData[0]._id%></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">2</th>
+                            <td>Name</td>
+                            <td><%= deletedData[0].name%></td>
+                        </tr>
+
+                        <tr>
+                            <th scope="row">2</th>
+                            <td>Email</td>
+                            <td><%= deletedData[0].email%></td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                    <% } %>
+                </div>
+
+            </div>
+
+        </div>
 
 
 
