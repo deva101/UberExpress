@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
-var validate = require('mongoose-validator');
+const validate = require('mongoose-validator');
+
+const PointSchema = new mongoose.Schema({
+   type: {type:String, default:'Point'},
+    coordinates: {type: [Number], index: '2dsphere'}
+});
 
 // Email Validation
 var emailValidator = [
@@ -18,7 +23,8 @@ var emailValidator = [
 const DriverSchema = new mongoose.Schema({
     name: {type: String},
     email : { type:String, required:true, validate: emailValidator},
-    driving: { type: Boolean, default:false}
+    driving: { type: Boolean, default:false},
+    geometry: PointSchema
 });
 
 module.exports = mongoose.model('driver',DriverSchema);

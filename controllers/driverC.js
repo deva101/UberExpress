@@ -6,7 +6,7 @@ module.exports = {
   //   res.send({ hi:'there?'});
   // },
 
-  homepage(req,res){
+    homepage(req,res){
     // Send All EmailId of drivers
       let promise = DriverModel.find({}).exec();
       promise.then(function (arrayOfEmail) {
@@ -19,22 +19,27 @@ module.exports = {
           res.render("homepage.ejs", {
               status: req.flash('status'),
               code: req.flash('code'),
-              'data': $emails,
+
+              'data': JSON.stringify($emails),
 
               updatedData : req.flash('updatedData'),
               tag : req.flash('tag'),
 
-              deletedData: req.flash('deletedData')
-          });
+              deletedData: req.flash('deletedData'),
 
+              nearDriver: req.flash('nearDriver')
+          });
       });
   },
-  create(req,res,next){
+
+    create(req,res,next){
       /*            PUT         */
       if(req.body._method === 'put'){
           const driverId = req.body.email;
           const driverName = req.body.name;
           const driverDriving = req.body.driving;
+          const driverLongitude = req.body.lng;
+          const driverLatitude = req.body.lat;
 
           /*
           DriverModel.findOneAndUpdate({_id:driverId},{driving: driverDriving, name: driverName})
@@ -57,8 +62,9 @@ module.exports = {
           DriverModel.findOne({_id:driverId})
               .then( (driver)=> {
                   var $tag = ['none'];
-                  console.log(typeof driver.driving.toString(),typeof driverDriving);
-                  console.log(driver.name,driverName);
+                  // console.log(typeof driver.driving.toString(),typeof driverDriving);
+                  // console.log(driver.geometry.coordinates);
+                  // console.log(driver.geometry.coordinates[0]);console.log(driver.geometry.coordinates[1]);
 
                   if (driver.driving.toString() !== driverDriving) {
                       driver.set('driving', driverDriving);
@@ -68,11 +74,20 @@ module.exports = {
                       driver.set('name', driverName);
                       $tag.push('name');
                   }
+                  if (driver.geometry.coordinates[0].toString() !== driverLongitude ||
+                      driver.geometry.coordinates[1].toString() !== driverLatitude ) {
+
+                      let $arr = [parseFloat(driverLongitude),parseFloat(driverLatitude)];
+                      driver.set('geometry.coordinates',$arr );
+                      $tag.push('coordinates');
+                  }
 
                   driver.save()
                       .then((savedRecord) => {
                           req.flash('updatedData', driver);
                           req.flash('tag', $tag);
+                          // console.log('tag:',$tag);
+                          // console.log(savedRecord);
                           res.redirect('/');
                       })
               }).catch(next);
@@ -86,7 +101,6 @@ module.exports = {
                     req.flash('deletedData', driver);
                     res.redirect('/');
                 }).catch(next);
-
       }else{
       /*            POST          */
 
@@ -123,8 +137,16 @@ module.exports = {
                   next() ;
               } else {
                   // Register the user
-                  // let joe = new DriverModel({email:req.body.email});
-                  let joe = new DriverModel(req.body);
+                  const name = req.body.name;
+                  const email = req.body.email;
+                  const longitude = req.body.lng;
+                  const latitude = req.body.lat;
+
+                  let joe = new DriverModel({
+                      name: name,
+                      email: email,
+                      geometry: {type: 'Point', coordinates: [longitude,latitude]}
+                  });
                   joe.save(function(err){
                       if(err){
                           req.flash('status' , err.toString());
@@ -143,25 +165,26 @@ module.exports = {
 
   },
 
-
+    // PUT request
+    // Editing of data
     edit(req,res,next){
       // Params are the value assigned via Wildcard
         const driverId = req.params.id ;
 
-        console.log('ID:',driverId);
-        console.log('Body:',req.body);
-        console.log('Param:',req.params);
+        // console.log('ID:',driverId);
+        // console.log('Body:',req.body);
+        // console.log('Param:',req.params);
 
         // DriverModel.findOneAndUpdate({_id:driverId},req.body)
-        // // DriverModel.findByIdAndUpdate(driverId,req.body)
-        //     .then( (data)=>{
-        //         req.flash('status' , "Changes Saved!!");
-        //         req.flash('code' , "success");
-        //
-        //         res.redirect('/');
-        //
-        //         // console.log(data)    // Previous data
-        //     }).catch(next);
+        DriverModel.findByIdAndUpdate(driverId,req.body)
+            .then( (data)=>{
+                // console.log(data)    // Previous data
+                return DriverModel.findById({ _id: driverId})
+            }).then( driver =>{
+                // Updated Data
+            // console.log('Driver',driver);
+                res.send(driver);
+            }).catch(next);
 
     },
 
@@ -169,9 +192,39 @@ module.exports = {
 
 
 
+    },
+
+    // For all GET request
+    // Get drivers near to specific coordinates
+    index(req,res,next){
+        // hhtp://google.com?lng=0&lat=20
+        const {lng,lat} = req.query;
+
+        // DriverModel.geoNear(
+        //     {type: 'Point', coordinates: [parseFloat(lng),parseFloat(lat)] },
+        //     {spherical: true, maxDistance: 200000}//2,00,000m
+        // )
+        DriverModel.aggregate([
+            { $geoNear:{
+                    near: { type: "Point", coordinates: [ parseFloat(lng),parseFloat(lat) ] },
+                    distanceField: "dist",
+                    spherical: true,
+                    maxDistance: 200000
+                }
+            }
+        ])
+        // .then(drivers=>(JSON.stringify(drivers)))
+        .then( result => {
+            // console.log(result.toString() === '',result);
+            if (result.toString() !== '')
+                req.flash('nearDriver', result);
+            else
+                req.flash('nearDriver',{name:"No Driver Found!"});
+            // console.log('driverC:',result);
+            res.redirect('/');
+        })
+        .catch(next);
     }
-
-
 
 
 

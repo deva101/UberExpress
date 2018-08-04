@@ -37,7 +37,19 @@
                         <td><input type="email" name="email"></td>
                     </tr>
 
-                </table>
+                </table><br>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>Longitude:</label>
+                        <input type="number" name="lng">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Latitude:</label>
+                        <input type="number" name="lat">
+                    </div>
+                </div>
 
                 <button type="submit">Submit!</button>
             </form>
@@ -53,55 +65,43 @@
                     <form method="POST" action="/api/driver">
                         <input type="hidden" name="_method" value="put">
 
-
                         <section>
                             <label>Email Id:</label>
                             <label class="select" >
                                 <select class="input-sm" name="email" onchange="updateName(this)">
                                     <option value="">Select</option>
-                                    <% for(var i=0; i<data.length ;i++){  %>
-                                        <option value="<%= data[i]._id; %>"><%= data[i]._id + ' | ' + data[i].email %></option>
+                                    <%  const DropDownData = JSON.parse(data);
+                                        for(var i=0; i<DropDownData.length ;i++){  %>
+                                            <option value="<%= DropDownData[i]._id; %>"><%= DropDownData[i]._id + ' | ' + DropDownData[i].email %></option>
                                     <% } %>
                                 </select> <i></i> </label>
                         </section><br>
 
-
-
-
                         <script>
                             function updateName(object){
                                 var index = object.selectedIndex;
-                                var myVar =  `<%- data %>` ;
+                                var myVar =  JSON.parse( `<%- data %>` ) ;
 
-                                // console.log(index);
-                                let tokens = myVar.split(',');
-                                let temp = tokens[5*(index-1)].split(':');
-                                let $driving = temp[1].trim();
+                                // console.log("myVar:",myVar);
+                                // console.log("Index:",index);
+                                // console.log("specific USer:",myVar[index-1]);
+                                // console.log("Driving1:",myVar[index-1].driving);
+                                // console.log("Driving1:",myVar[index-1].geometry.coordinates);
 
-                                temp = tokens[5*(index-1)+2].split(':');
-                                let $name = temp[1].split("'") ;
-                                $name = $name[1].trim();
-
-                                // console.log($driving);
-                                // if ($driving == "1")
-                                // if ($driving === "1")
-
-                                // if ($driving == true)
-                                // if ($driving.equals("true") === true)
-                                // if ($driving)
-                                //     console.info(true);
-                                // else console.info(false);
-
-                                // console.log($name);
-
+                                let $driving = myVar[index-1].driving;
+                                let $name = myVar[index-1].name;
+                                let $coordinates = myVar[index-1].geometry.coordinates;
                                 if ($driving === "true")
                                     document.querySelector('#drivingID').selectedIndex = 0;
                                 else
                                     document.querySelector('#drivingID').selectedIndex = 1;
+
                                 document.querySelector('#nameID').value =  $name;
+                                document.querySelector('#longitude').value =  $coordinates[0];
+                                document.querySelector('#latitude').value =  $coordinates[1];
+
                             }
                         </script>
-
 
                         <label>Driving:</label>
                         <label>
@@ -114,7 +114,17 @@
                         <label>Name:</label>
                         <input type="text" name="name" id="nameID"><br><br>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Longitude:</label>
+                                <input type="number" name="lng" id="longitude">
+                            </div>
 
+                            <div class="col-md-6">
+                                <label>Latitude:</label>
+                                <input type="number" name="lat"id="latitude">
+                            </div>
+                        </div>
 
                         <button type="submit">Submit!</button>
                     </form>
@@ -132,7 +142,6 @@
                             <tr>
                                 <th scope="row">2</th>
                                 <td>Name</td>
-                                <% console.log(tag);%>
                                 <td <% if (tag.includes('name')) {%>class="alert-success" <%}%>><%= updatedData[0].name%></td>
                             </tr>
 
@@ -146,6 +155,12 @@
                                 <th scope="row">3</th>
                                 <td>Driving Status</td>
                                 <td <% if (tag.includes('driving')) {%>class="alert-success" <%}%>><%= updatedData[0].driving%></td>
+                            </tr>
+
+                            <tr>
+                                <th scope="row">3</th>
+                                <td>Coordinates</td>
+                                <td <% if (tag.includes('coordinates')) {%>class="alert-success" <%}%>><%= updatedData[0].geometry.coordinates; %></td>
                             </tr>
                             </tbody>
                         </table>
@@ -202,6 +217,59 @@
                             <td><%= deletedData[0].email%></td>
                         </tr>
 
+                        </tbody>
+                    </table>
+                    <% } %>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!--[GET] get nearest driver-->
+        <div class="container well">
+            <h3>Nearest Driver:</h3>
+
+            <div class="row">
+
+                <div class="col-md-5">
+                    <form method="GET" action="/api/driver">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label>Longitude:</label>
+                            <input type="number" name="lng">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label>Latitude:</label>
+                            <input type="number" name="lat">
+                        </div>
+                    </div>
+                        <button type="submit">Submit!</button>
+                    </form>
+                </div>
+
+                <div class="col-md-7">
+                    <% if (nearDriver.toString() !== '') { %>
+
+                    <table class="table alert-success">
+                        <thead>
+                            <td>S.No</td>
+                            <td>Name</td>
+                            <td>Email</td>
+                            <td>Distance(in m)</td>
+                        </thead>
+
+                        <tbody>
+                        <% for (var i=0;i<nearDriver.length;i++){ %>
+                            <tr>
+                                <th><%= (i+1); %></th>
+                                <td><%= nearDriver[i].name%></td>
+                                <td><%= nearDriver[i].email%></td>
+                                <td><%= nearDriver[i].dist%></td>
+                            </tr>
+                        <% } %>
                         </tbody>
                     </table>
                     <% } %>
