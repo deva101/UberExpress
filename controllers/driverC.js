@@ -188,13 +188,21 @@ module.exports = {
 
     },
 
+    // DELETE request
+    // delete driver with specific id
     delete(req,res,next){
+        const driverId = req.params.id;
 
-
-
+        DriverModel.findByIdAndRemove(driverId)
+            .then( driver =>{
+                // res.sendStatus(204);
+                res.writeHead(204, {"Content-Type": "application/json"});
+                res.end();
+            })
+            .catch(next);
     },
 
-    // For all GET request
+    // GET request
     // Get drivers near to specific coordinates
     index(req,res,next){
         // hhtp://google.com?lng=0&lat=20
